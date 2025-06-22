@@ -4,28 +4,29 @@ export const productSchema = z.object({
   body: z.object({
     name: z.string().optional(),
     description: z.string().optional(),
-    price: z.string().optional(),
-
-    inStock: z
-      .string()
-      .optional()
-      .transform((val) => val === "true"),
-
-    quantity: z
-      .string()
-      .optional()
-      .transform((val) => {
-        if (!val) return undefined;
-        const parsed = Number(val);
-        if (isNaN(parsed)) throw new Error("Quantity must be a number");
-        return parsed;
-      })
-      .refine((val) => val === undefined || Number.isInteger(val), {
-        message: "Quantity must be an integer",
-      }),
-
+    price: z.number().optional(),
+    image: z.string().optional(),
+    inStock: z.boolean().optional(),
+    quantity: z.number().optional(),
     sku: z.string().optional(),
-    discount: z.string().optional(),
+    discount: z.number().optional(),
+    brandName: z.string().optional(),
+    brandDesc: z.string().optional(),
+    category: z.string().optional(),
+    tags: z.string().optional(),
+  }),
+});
+
+const updateProductSchema = z.object({
+  body: z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    price: z.number().optional(),
+    image: z.string().optional(),
+    inStock: z.boolean().optional(),
+    quantity: z.number().optional(),
+    sku: z.string().optional(),
+    discount: z.number().optional(),
     brandName: z.string().optional(),
     brandDesc: z.string().optional(),
     category: z.string().optional(),
@@ -35,4 +36,5 @@ export const productSchema = z.object({
 
 export const ProductValidation = {
   productSchema,
+  updateProductSchema,
 };

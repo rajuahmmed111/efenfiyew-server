@@ -80,9 +80,9 @@ model User {
   updatedAt DateTime @updatedAt
 
   // relationships
-  subscription Subscription?
-  payment      Payment[]
-  product      Product[]
+  payment Payment[]
+  product Product[]
+  review  Review[]
 
   @@map("users")
 }
@@ -101,14 +101,14 @@ model Product {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String
-  price       String
+  price       Float
   image       String
-  inStock     Boolean
-  quantity    Int
-  sku         String
-  discount    String
-  brandName   String
-  brandDesc   String
+  inStock     Boolean @default(true)
+  quantity    Int     @default(0)
+  sku         String  @default("12345")
+  discount    Float   @default(0)
+  brandName   String  @default("Apple")
+  brandDesc   String  @default("Locally grown staple vegetables with quality assurance")
   category    String
   tags        String
 
@@ -118,72 +118,25 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  review    Review[]
 
   @@map("products")
 }
 
-model Notification {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  receiverId Int
-
-  viewed Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("notifications")
-}
-
-//plan model
-model SubscriptionPlan {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  planId        Plan     @unique
-  name          String
-  description   String
-  price         Float
-  currency      String   @default("USD")
-  // month or year
-  interval      String
-  intervalCount Int?
-  features      String[]
-  adminId       String?
-
-  // Store payment provider specific IDs
-  stripeProductId String?
-  stripePriceId   String?
-
-  isActive     Boolean       @default(true)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  subscription Subscription?
-
-  @@map("subscription_plans")
-}
-
-model Subscription {
-  id                String             @id @default(auto()) @map("_id") @db.ObjectId
-  startDate         DateTime           @default(now())
-  endDate           DateTime
-  cancelAtPeriodEnd Boolean            @default(false)
-  status            SubscriptionStatus @default(ACTIVE)
-
-  // which provider with we subscribe
-  paymentProvider      PaymentProvider
-  stripeSubscriptionId String          @unique
-  stripePriceId        String
-
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating    Int?
+  review    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // relationships
-  user     User             @relation(fields: [userId], references: [id])
-  userId   String           @unique @db.ObjectId
-  plan     SubscriptionPlan @relation(fields: [planId], references: [id])
-  planId   String           @unique @db.ObjectId
-  payments Payment[]
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
 
-  @@map("subscriptions")
+  @@map("reviews")
 }
 
 model Payment {
@@ -194,57 +147,13 @@ model Payment {
   provider        PaymentProvider
   paymentIntentId String? // Stripe payment intent ID
   stripeSessionId String?         @unique
-  // userId          String?         @db.ObjectId 
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // relationships
-  user           User         @relation(fields: [userId], references: [id])
-  userId         String       @db.ObjectId
-  subscriptionId String       @db.ObjectId
-  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
 
   @@map("payments")
-}
-
-model Terms_Condition {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  title                 String
-  acceptance_terms      String
-  app_purpose           String
-  user_responsibilities String
-  data_usage            String
-  intellectual_property String
-  limitation            String
-  updates               String
-  contactUS             String
-  adminId               String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("terms_conditions")
-}
-
-model Privacy_Policy {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-
-  title                String
-  introduction         String
-  information_collect  String[]
-  how_useYour_data     String[]
-  data_security        String
-  third_party_services String
-  user_control         String[]
-  children_privacy     String
-  changes_to_policy    String
-  contact_info         String
-  adminId              String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("privacy_policies")
 }
