@@ -1,7 +1,7 @@
 import express from "express";
 
 import { authRoutes } from "../modules/Auth/auth.routes";
-import { subscriptionRoute } from "../modules/subscriptions/subscriptions.route";
+import { subscriptionRoute } from "../modules/payment/payment.route";
 import { userRoute } from "../modules/User/user.route";
 import { productRoute } from "../modules/Products/product.route";
 import { reviewRoute } from "../modules/Review/review.route";
