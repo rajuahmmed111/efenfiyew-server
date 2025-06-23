@@ -26,7 +26,6 @@ const checkoutSession = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"] as string;
   let event: Stripe.Event;
@@ -71,8 +70,6 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
       console.log("Invoice payment succeeded:", invoice.id);
       break;
     }
-
-    
 
     default:
       console.log(`Unhandled event type: ${event.type}`);

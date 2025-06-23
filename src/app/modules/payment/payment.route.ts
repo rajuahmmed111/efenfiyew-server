@@ -19,5 +19,5 @@ router.post(
   stripeController.handleStripeWebhook
 );
 
-export const subscriptionRoute = router;
+export const paymentRoute = router;
 // cloudflared tunnel --url http://localhost:5000
