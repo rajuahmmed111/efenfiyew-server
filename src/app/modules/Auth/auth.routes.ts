@@ -19,15 +19,10 @@ router.post("/logout", AuthController.logoutUser);
 //change password
 router.put(
   "/change-password",
-  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER, UserRole.FARMER),
   validateRequest(authValidation.changePasswordValidationSchema),
   AuthController.changePassword
 );
 
-// forgot password
-router.post("/forgot-password", AuthController.forgotPassword);
-
-// reset password
-router.post("/reset-password", AuthController.resetPassword);
 
 export const authRoutes = router;

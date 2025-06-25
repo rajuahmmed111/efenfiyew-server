@@ -5,6 +5,7 @@ import config from "../../../config";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { AuthServices } from "./auth.service";
+import ApiError from "../../../errors/ApiErrors";
 
 // login user
 const loginUser = catchAsync(async (req: Request, res: Response) => {
@@ -70,10 +71,14 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
   const { oldPassword, newPassword } = req.body;
 
+  if (!userId || !oldPassword || !newPassword) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Missing required fields");
+  }
+
   const result = await AuthServices.changePassword(
     userId,
-    newPassword,
-    oldPassword
+    oldPassword,
+    newPassword
   );
 
   sendResponse(res, {
@@ -84,37 +89,10 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// forgot password
-const forgotPassword = catchAsync(async (req: Request, res: Response) => {
-  const data = await AuthServices.forgotPassword(req.body);
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Check your email!",
-    data: data,
-  });
-});
-
-// reset password
-const resetPassword = catchAsync(async (req: Request, res: Response) => {
-  const token = req.headers.authorization || "";
-
-  await AuthServices.resetPassword(token, req.body);
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Password Reset!",
-    data: null,
-  });
-});
 
 export const AuthController = {
   loginUser,
   refreshToken,
   logoutUser,
   changePassword,
-  forgotPassword,
-  resetPassword,
 };

@@ -3,7 +3,6 @@ import httpStatus from "http-status";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { UserService } from "./user.service";
-import ApiError from "../../../errors/ApiErrors";
 import { pick } from "../../../shared/pick";
 import { filterField } from "./user.constant";
 import { paginationFields } from "../../../constants/pagination";
@@ -49,10 +48,9 @@ const getUserById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 // update user
 const updateUser = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = req.user?.id;
   const data = req.body;
 
   const result = await UserService.updateUser(userId, data);
@@ -80,20 +78,20 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 // update my  profile image
-const updateUserProfileImage = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.user;
-  const result = await UserService.updateUserProfileImage(id, req);
+const updateUserProfileImage = catchAsync(
+  async (req: Request, res: Response) => {
+    const { email } = req.user;
+    const result = await UserService.updateUserProfileImage(email, req);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "My profile image updated successfully",
-    data: result,
-  });
-});
-
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Profile image updated successfully",
+      data: result,
+    });
+  }
+);
 // get my profile
 const getMyProfile = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
@@ -116,5 +114,3 @@ export const UserController = {
   updateUserProfileImage,
   getMyProfile,
 };
-
- 

@@ -15,10 +15,11 @@ export type TUser = {
 };
 
 export type IUpdateUser = {
-  fullName: string;
-  contactNumber: string;
-  address: string;
-  country: string;
+  fullName?: string;
+  email?: string;
+  contactNumber?: string;
+  address?: string;
+  country?: string;
 };
 
 export type IFilterRequest = {
@@ -50,4 +51,3 @@ export type IProfileImageResponse = {
   email: string;
   profileImage: string | null;
 };
-

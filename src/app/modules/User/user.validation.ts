@@ -23,6 +23,7 @@ const createUserZodSchema = z.object({
 export const updateUserZodSchema = z.object({
   body: z.object({
     fullName: z.string().optional(),
+    email: z.string().email().optional(),
     contactNumber: z.string().optional(),
     address: z.string().optional(),
     country: z.string().optional(),

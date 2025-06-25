@@ -10,6 +10,7 @@ import { Prisma, Product } from "@prisma/client";
 import { IProductFilterRequest } from "./product.interfaee";
 import { productSearchableFields } from "./product.constant";
 
+// create product
 const createProduct = async (req: Request) => {
   const file = req.file as IUploadedFile | undefined;
   const userId = req.user?.id;

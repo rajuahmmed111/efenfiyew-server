@@ -5,7 +5,12 @@ import prisma from "../../../shared/prisma";
 import { Prisma, User, UserRole, UserStatus } from "@prisma/client";
 import { ObjectId } from "mongodb";
 import { IPaginationOptions } from "../../../interfaces/paginations";
-import { IFilterRequest, IProfileImageResponse, IUpdateUser, SafeUser } from "./user.interface";
+import {
+  IFilterRequest,
+  IProfileImageResponse,
+  IUpdateUser,
+  SafeUser,
+} from "./user.interface";
 import { paginationHelpers } from "../../../helpars/paginationHelper";
 import { searchableFields } from "./user.constant";
 import { IGenericResponse } from "../../../interfaces/common";
@@ -227,34 +232,32 @@ const deleteUser = async (
 };
 
 // update user profile image
-const updateUserProfileImage = async (id: string, req: Request): Promise<IProfileImageResponse> => {
-  console.log(req.file, "req.file in user service");
+const updateUserProfileImage = async (
+  email: string, // Changed from id to email
+  req: Request
+): Promise<IProfileImageResponse> => {
   const userInfo = await prisma.user.findUnique({
-    where: { id, status: UserStatus.ACTIVE },
+    where: { email, status: UserStatus.ACTIVE }, // Use email
   });
+
   if (!userInfo) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
   const file = req.file as IUploadedFile;
+  let profileImageUrl: string | undefined = userInfo.profileImage;
+
   if (file) {
     const cloudinaryResponse = await uploadFile.uploadToCloudinary(file);
-    req.body.profilePhoto = cloudinaryResponse?.secure_url;
+    profileImageUrl = cloudinaryResponse?.secure_url;
   }
 
-  const profileInfo = await prisma.user.update({
-    where: {
-      email: userInfo.email,
-    },
-    data: { profileImage: req.body.profilePhoto },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      profileImage: true,
-    },
+  const updatedUser = await prisma.user.update({
+    where: { email: userInfo.email },
+    data: { profileImage: profileImageUrl },
   });
-  return profileInfo;
+
+  return updatedUser;
 };
 
 // get my profile

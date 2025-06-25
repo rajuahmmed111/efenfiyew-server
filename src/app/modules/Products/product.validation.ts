@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const productSchema = z.object({
+const productSchema = z.object({
   body: z.object({
     name: z.string().optional(),
     description: z.string().optional(),
