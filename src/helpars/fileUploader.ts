@@ -26,6 +26,7 @@ const upload = multer({ storage: storage });
 const profileImage = upload.single("profileImage");
 const productImage = upload.single("productImage");
 
+
 const uploadToCloudinary = async (
   file: IUploadedFile
 ): Promise<ICloudinaryUploadResponse | undefined> => {
