@@ -7,52 +7,51 @@ import config from "../../../config";
 // checkout session
 const checkoutSession = async (
   userId: string,
-  productId: string,
-  price: number,
+  productIds: string, // comma-separated
+  totalPrice: number,
   description: string
 ) => {
-  // validate user
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const productIdArray = productIds.split(",");
+
+  // Validate user
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+
+  // Fetch all products
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIdArray } },
   });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+
+  if (products.length !== productIdArray.length) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Some products not found");
   }
 
-  // validate product
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-  });
-  if (!product) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Product not found");
-  }
+  // Build line_items
+  const line_items = products.map((product) => ({
+    price_data: {
+      currency: "usd",
+      product_data: {
+        name: product.name,
+        description,
+        metadata: {
+          userId,
+          productId: product.id,
+        },
+      },
+      unit_amount: Math.round(product.price * 100), // from DB
+    },
+    quantity: 1, // or get from frontend payload later if needed
+  }));
 
-  // create Stripe checkout session
   const sessionStripe = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: product.name,
-            description: description,
-            metadata: {
-              userId,
-              productId,
-            },
-          },
-          unit_amount: Math.round(price * 100),
-        },
-        quantity: 1,
-      },
-    ],
+    line_items,
     mode: "payment",
     success_url: `${config.frontend_url}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${config.frontend_url}/cancel`,
     metadata: {
       userId,
-      productId,
+      productIds: productIds,
       description,
     },
   });
@@ -62,6 +61,7 @@ const checkoutSession = async (
     sessionId: sessionStripe.id,
   };
 };
+
 
 export const subscriptionPlanService = {
   checkoutSession,

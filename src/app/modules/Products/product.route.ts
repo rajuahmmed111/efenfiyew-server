@@ -9,22 +9,22 @@ import { parseBodyData } from "../../middlewares/parseNestedJson";
 
 const router = express.Router();
 
-// get all products
-router.get("/", /*auth(),**/ ProductController.getAllProducts);
+// get all products without pagination and filtering
+router.get("/", auth(), ProductController.getAllProducts);
 
 // get single product
 router.get("/:id", /*auth(),**/ ProductController.getProductById);
 
 // get single product with related data through category
 router.get(
-    "/:id/related",
-    // auth(),
-    ProductController.getProductByIdWithRelatedData
+  "/:id/related",
+  // auth(),
+  ProductController.getProductByIdWithRelatedData
 );
 
 router.post(
   "/",
-//   auth(UserRole.FARMER),
+  auth(UserRole.FARMER),
   uploadFile.productImage,
   parseBodyData,
   validateRequest(ProductValidation.productSchema),
@@ -34,7 +34,7 @@ router.post(
 // update product
 router.patch(
   "/:id",
-//   auth(UserRole.FARMER),
+  //   auth(UserRole.FARMER),
   uploadFile.productImage,
   parseBodyData,
   validateRequest(ProductValidation.updateProductSchema),
@@ -42,6 +42,9 @@ router.patch(
 );
 
 // delete product
-router.delete("/:id", /*auth(UserRole.FARMER),**/ ProductController.deleteProduct);
+router.delete(
+  "/:id",
+  /*auth(UserRole.FARMER),**/ ProductController.deleteProduct
+);
 
 export const productRoute = router;

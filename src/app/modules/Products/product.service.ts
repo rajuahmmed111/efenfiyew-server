@@ -142,6 +142,15 @@ const getAllProducts = async (
         : {
             createdAt: "desc",
           },
+
+    include: {
+      user: {
+        select: {
+          id: true,
+          profileImage: true,
+        },
+      },
+    },
   });
 
   const total = await prisma.product.count({
@@ -162,6 +171,14 @@ const getAllProducts = async (
 const getProductById = async (id: string) => {
   const product = await prisma.product.findUnique({
     where: { id },
+    include: {
+      user: {
+        select: {
+          id: true,
+          profileImage: true,
+        },
+      },
+    },
   });
   return product;
 };
