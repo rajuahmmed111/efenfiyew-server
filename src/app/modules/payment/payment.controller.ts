@@ -29,6 +29,7 @@ const checkoutSession = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// stripe webhook
 const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"] as string;
   if (!sig) {
@@ -60,8 +61,10 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const userId = session.metadata?.userId;
-      const productId = session.metadata?.productId;
+      const productIdsStr = session.metadata?.productIds;
       const description = session.metadata?.description || "No description";
+
+      const productIds = productIdsStr?.split(",") || [];
 
       const paymentIntentId = session.payment_intent as string;
       const sessionId = session.id;
@@ -72,8 +75,8 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
       const customerEmail = session.customer_details?.email || null;
       const customerName = session.customer_details?.name || null;
 
-      if (!userId || !productId) {
-        console.warn("Missing metadata in session");
+      if (!userId || productIds.length === 0) {
+        console.warn("Missing metadata in Stripe session");
         break;
       }
 
@@ -81,7 +84,7 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
       await prisma.payment.create({
         data: {
           userId,
-          productId,
+          productIds,
           amount,
           currency,
           status: session.payment_status || "UNKNOWN",
@@ -94,7 +97,7 @@ const handleStripeWebhook = catchAsync(async (req: Request, res: Response) => {
         },
       });
 
-      console.log("✅ Payment saved to database via webhook");
+      console.log("Payment saved to database via webhook");
       break;
     }
 

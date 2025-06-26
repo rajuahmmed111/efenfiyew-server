@@ -64,12 +64,11 @@ const getAllProducts = async (
 ) => {
   const { limit, page, skip, sortBy, sortOrder } =
     calculatedPagination(options);
-
   const { searchTerm, ...filterData } = params;
 
   const filters: Prisma.ProductWhereInput[] = [];
 
-  // text search
+  // 🔍 Full-text search
   if (params?.searchTerm) {
     filters.push({
       OR: productSearchableFields.map((field) => ({
@@ -81,50 +80,45 @@ const getAllProducts = async (
     });
   }
 
-  // filter
+  // 🧠 Custom field filtering
   const filterFieldTypes: Record<string, "string" | "number"> = {
     price: "number",
     rating: "number",
     category: "string",
     tags: "string",
+    minPrice: "number",
+    maxPrice: "number",
   };
 
-  if (Object.keys(filterData).length > 0) {
-    const andConditions: Prisma.ProductWhereInput[] = Object.entries(
-      filterData
-    ).reduce((acc: Prisma.ProductWhereInput[], [key, value]) => {
-      if (value === undefined) return acc;
+  const andConditions: Prisma.ProductWhereInput[] = Object.entries(
+    filterData
+  ).reduce((acc: Prisma.ProductWhereInput[], [key, value]) => {
+    if (value === undefined) return acc;
 
-      const expectedType = filterFieldTypes[key];
-      let castedValue: any = value;
+    const expectedType = filterFieldTypes[key];
+    let castedValue: any = value;
 
-      if (expectedType === "number") {
-        castedValue = parseFloat(value);
-        if (isNaN(castedValue)) return acc;
-      }
-
-      // for tags
-      if (key === "tags") {
-        acc.push({
-          tags: {
-            contains: castedValue,
-            mode: "insensitive",
-          },
-        });
-      } else {
-        acc.push({
-          [key]: {
-            equals: castedValue,
-          },
-        });
-      }
-
-      return acc;
-    }, []);
-
-    if (andConditions.length > 0) {
-      filters.push({ AND: andConditions });
+    if (expectedType === "number") {
+      castedValue = parseFloat(value);
+      if (isNaN(castedValue)) return acc;
     }
+
+    // Special handling
+    if (key === "minPrice") {
+      acc.push({ price: { gte: castedValue } });
+    } else if (key === "maxPrice") {
+      acc.push({ price: { lte: castedValue } });
+    } else if (key === "tags") {
+      acc.push({ tags: { contains: castedValue, mode: "insensitive" } });
+    } else {
+      acc.push({ [key]: { equals: castedValue } });
+    }
+
+    return acc;
+  }, []);
+
+  if (andConditions.length > 0) {
+    filters.push({ AND: andConditions });
   }
 
   const where: Prisma.ProductWhereInput =
@@ -135,14 +129,7 @@ const getAllProducts = async (
     skip,
     take: limit,
     orderBy:
-      sortBy && sortOrder
-        ? {
-            [sortBy]: sortOrder,
-          }
-        : {
-            createdAt: "desc",
-          },
-
+      sortBy && sortOrder ? { [sortBy]: sortOrder } : { createdAt: "desc" },
     include: {
       user: {
         select: {
@@ -153,9 +140,7 @@ const getAllProducts = async (
     },
   });
 
-  const total = await prisma.product.count({
-    where,
-  });
+  const total = await prisma.product.count({ where });
 
   return {
     meta: {

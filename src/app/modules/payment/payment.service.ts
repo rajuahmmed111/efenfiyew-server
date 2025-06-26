@@ -47,8 +47,8 @@ const checkoutSession = async (
     payment_method_types: ["card"],
     line_items,
     mode: "payment",
-    success_url: `${config.frontend_url}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${config.frontend_url}/cancel`,
+    success_url: `${config.frontend_url}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${config.frontend_url}/checkout`,
     metadata: {
       userId,
       productIds: productIds,
@@ -61,7 +61,6 @@ const checkoutSession = async (
     sessionId: sessionStripe.id,
   };
 };
-
 
 export const subscriptionPlanService = {
   checkoutSession,
