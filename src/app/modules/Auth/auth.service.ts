@@ -4,7 +4,6 @@ import httpStatus from "http-status";
 import { JwtPayload, Secret } from "jsonwebtoken";
 import config from "../../../config";
 import ApiError from "../../../errors/ApiErrors";
-import emailSender from "../../../helpars/emailSender";
 import { jwtHelpers } from "../../../helpars/jwtHelpers";
 import prisma from "../../../shared/prisma";
 import { ILoginResponse } from "./auth.interface";
