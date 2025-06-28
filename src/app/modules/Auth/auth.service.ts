@@ -58,9 +58,16 @@ const loginUser = async (payload: {
     config.jwt.refresh_token_expires_in as string
   );
 
+
+
+// Destructure out password
+const { password, ...safeUserData } = userData;
+
+
   const result = {
     accessToken,
     refreshToken,
+     user: safeUserData
   };
 
   return result;
